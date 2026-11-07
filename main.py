@@ -1,4 +1,5 @@
 import cv2
+import easyocr
 
 chemin = "images/voiture.jfif"
 image = cv2.imread(chemin)
@@ -16,3 +17,7 @@ else:
         cv2.imshow("Plaque decoupee", plaque)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+
+        lecteur = easyocr.Reader(["en"], gpu=False)
+        textes = lecteur.readtext(plaque, detail=0)
+        print(" Texte lu sur la plaque : ", textes)
