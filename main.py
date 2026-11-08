@@ -1,7 +1,8 @@
 import cv2
 import easyocr
+import re
 
-chemin = "images/voiture.jfif"
+chemin = "images/voiture3.jfif"
 image = cv2.imread(chemin)
 
 if image is None:
@@ -63,10 +64,27 @@ else:
         zone_agrandie = cv2.resize(zone_retenue, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
         textes_agrandis = lecteur.readtext(zone_agrandie, detail=0)
         print("Lecture après agrandissement :", textes_agrandis)
-        
+
         for texte_lu in textes_agrandis:
             immatriculation = "".join(c for c in texte_lu.upper() if c.isalnum())
             print("Immatriculation normalisée :", immatriculation)
+
+            if re.fullmatch(r"[A-Z]{2}[0-9]{3}[A-Z]{2}", immatriculation):
+                print("Format conforme pour cet essai.")
+            else:
+                groupes = re.fullmatch(r"([A-Z]+)([0-9]+)([A-Z]+)", immatriculation)
+
+                if groupes:
+                    for nom, valeur, attendu in zip(
+                        ("premier", "deuxième", "troisième"),
+                        groupes.groups(),
+                        (2, 3, 2),
+                    ):
+                        if len(valeur) != attendu:
+                            print(f"Lecture à vérifier : {nom} groupe « {valeur} » "
+                                  f"({len(valeur)} caractère(s) au lieu de {attendu}).")
+                else:
+                    print("Lecture à vérifier : impossible de distinguer les trois groupes attendus.")
 
         cv2.imshow("Zone retenue par le programme", zone_retenue)
         cv2.waitKey(0)
